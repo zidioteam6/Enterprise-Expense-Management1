@@ -3,7 +3,7 @@ package com.expense.management.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.expense.management.model.User;
+import com.expense.management.entity.User;
 import com.expense.management.repository.UserRepository;
 
 // In service/UserService.java

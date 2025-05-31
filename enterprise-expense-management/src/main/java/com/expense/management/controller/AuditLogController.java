@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.expense.management.model.AuditLog;
+import com.expense.management.entity.AuditLog;
 import com.expense.management.services.AuditService;
 
 @RestController

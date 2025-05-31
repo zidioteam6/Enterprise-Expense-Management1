@@ -1,7 +1,8 @@
 package com.expense.management.repository;
 
-import com.expense.management.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.expense.management.entity.User;
 
 import java.util.Optional;
 

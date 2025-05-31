@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.expense.management.model.AuditLog;
+import com.expense.management.entity.AuditLog;
 import com.expense.management.repository.AuditLogRepository;
 
 @Service

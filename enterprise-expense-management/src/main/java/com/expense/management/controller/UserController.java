@@ -2,7 +2,7 @@ package com.expense.management.controller;
 
 import com.expense.management.dto.LoginRequest;
 import com.expense.management.dto.SignupRequest;
-import com.expense.management.model.User;
+import com.expense.management.entity.User;
 import com.expense.management.repository.UserRepository;
 
 import jakarta.annotation.PostConstruct;
