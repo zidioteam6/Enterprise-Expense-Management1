@@ -1,4 +1,6 @@
 package com.expense.management.entity;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -29,6 +31,9 @@ public class User {
         this.password = password;
     }
 
+    @JoinColumn
+    List<AuditLog> Audits;
+    
     // Getters and Setters
     
 }
