@@ -1,4 +1,3 @@
-
 //working propely addexpesneform
 
 
@@ -13,6 +12,7 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
     description: '',
   });
   const [error, setError] = useState('');
+  const [invoice, setInvoice] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ 
@@ -20,6 +20,10 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
       [e.target.name]: e.target.value 
     });
     setError('');
+  };
+
+  const handleFileChange = (e) => {
+    setInvoice(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -45,25 +49,24 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
     }
 
     try {
-      const formattedData = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        date: new Date(formData.date).toISOString().split('T')[0],
-      };
+      const expenseData = new FormData();
+      expenseData.append('amount', formData.amount);
+      expenseData.append('category', formData.category);
+      expenseData.append('date', formData.date);
+      expenseData.append('description', formData.description);
+      if (invoice) {
+        expenseData.append('invoice', invoice);
+      }
 
-      console.log('Submitting expense:', formattedData);
-      const response = await axios.post('http://localhost:8080/api/expenses', formattedData);
-      console.log('API Response:', response.data);
+      const response = await axios.post('http://localhost:8080/api/expenses', expenseData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-      const newExpense = {
-        ...response.data,
-        date: response.data.date
-          ? new Date(response.data.date).toISOString().split('T')[0]
-          : formattedData.date,
-      };
-
-      onAddExpense(newExpense);
+      onAddExpense(response.data);
       setFormData({ amount: '', category: '', date: '', description: '' });
+      setInvoice(null);
       setError('');
       closeForm();
     } catch (error) {
@@ -135,6 +138,17 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
             value={formData.description}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="invoice">Attach Invoice (PDF/Image) <span className="text-sm text-gray-400">(Optional)</span></label>
+          <input
+            type="file"
+            name="invoice"
+            accept=".pdf,image/*"
+            onChange={handleFileChange}
+            className="w-full p-2 border border-gray-300 rounded file-input"
           />
         </div>
 
