@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -19,16 +20,16 @@ public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String action;
     private String entityName;
     private String entityId;
     private String performedBy;
     private LocalDateTime timestamp;
 
-    @JoinColumn
-    User user;
-    
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(length = 2000)
     private String details;
 
@@ -37,7 +38,7 @@ public class AuditLog {
     }
 
     public AuditLog(String action, String entityName, String entityId, String performedBy, LocalDateTime timestamp,
-            
+
             String details) {
         this.action = action;
         this.entityName = entityName;
@@ -49,5 +50,4 @@ public class AuditLog {
 
     // Getters and Setters
 
-    
 }

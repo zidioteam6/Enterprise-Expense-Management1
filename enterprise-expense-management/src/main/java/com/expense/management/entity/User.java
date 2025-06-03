@@ -31,8 +31,9 @@ public class User {
         this.password = password;
     }
 
-    @JoinColumn
-    List<AuditLog> Audits;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<AuditLog> audits;
+
     
     // Getters and Setters
     
