@@ -1,12 +1,17 @@
 package com.expense.management.controller;
 
-import com.expense.management.entity.Budget;
-import com.expense.management.entity.Expense;
-import com.expense.management.enums.ExpenseStatus;
+
+import com.expense.management.model.Budget;
+import com.expense.management.model.Expense;
+import com.expense.management.model.ExpenseStatus;
+import com.expense.management.services.ExpenseService;
 import com.expense.management.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -17,29 +22,33 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/expenses")
 public class ExpenseController {
+	
+	@Autowired
+	ExpenseService expenseService;
 
     @PostMapping
-    public String addExpense(@RequestBody Expense expense) {
-        Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            session.save(expense);
-            transaction.commit();
-            return "Expense added successfully!";
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
-            return "Error adding expense.";
-        }
+    public ResponseEntity<?> addExpense(@RequestBody Expense expense) {
+//        Transaction transaction = null;
+//        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+//            transaction = session.beginTransaction();
+//            session.save(expense);
+//            transaction.commit();
+//            return "Expense added successfully!";
+//        } catch (Exception e) {
+//            if (transaction != null) {
+//                transaction.rollback();
+//            }
+//            e.printStackTrace();
+//            return "Error adding expense.";
+//        }
+    	
+    	return new ResponseEntity<>(expenseService.add(expense), HttpStatus.CREATED);
+    	
     }
 
     @GetMapping
-    public List<Expense> getAllExpenses() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("from Expense", Expense.class).list();
-        }
+    public ResponseEntity<?> getAllExpenses() {
+        return new ResponseEntity<>( expenseService.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/total")

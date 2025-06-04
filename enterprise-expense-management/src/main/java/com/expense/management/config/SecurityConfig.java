@@ -31,19 +31,22 @@ public class SecurityConfig {
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-        .cors()  // enable CORS support
+        .cors()  // Enable CORS
         .and()
-        .csrf(csrf -> csrf.disable())
+        .csrf(csrf -> csrf.disable())  // Disable CSRF for development or API-only backend
         .authorizeHttpRequests(auth -> auth
-            // .requestMatchers("/api/expenses/**", "/api/auditlogs", "/api/auditlogs/**").permitAll()
-            .requestMatchers("/api/expenses/**", "/api/audit/**").permitAll()
-
-            .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()  // Allow all OPTIONS requests
+            .requestMatchers(
+                "/api/auth/**",         // ✅ Allow signup and login endpoints
+                "/api/expenses/**", 
+                "/api/audit/**"
+            ).permitAll()
+            .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
             .anyRequest().authenticated()
         );
 
     return http.build();
 }
+
 
 }
     
