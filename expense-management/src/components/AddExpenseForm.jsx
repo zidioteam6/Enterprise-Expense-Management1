@@ -4,11 +4,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const AddExpenseForm = ({ onAddExpense, closeForm }) => {
+const  AddExpenseForm = ({ onAddExpense, closeForm }) => {
   const [formData, setFormData] = useState({
     amount: '',
     category: '',
-    date: '',
+    // date: '',
     description: '',
   });
   const [error, setError] = useState('');
@@ -52,17 +52,17 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
       const expenseData = new FormData();
       expenseData.append('amount', formData.amount);
       expenseData.append('category', formData.category);
-      expenseData.append('date', formData.date);
+      // expenseData.append('date', formData.date);
       expenseData.append('description', formData.description);
       if (invoice) {
         expenseData.append('invoice', invoice);
       }
 
-      const response = await axios.post('http://localhost:8080/api/expenses', expenseData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+        const response = await axios.post('http://localhost:8080/api/expenses', expenseData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
       onAddExpense(response.data);
       setFormData({ amount: '', category: '', date: '', description: '' });
@@ -152,10 +152,10 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
           />
         </div>
 
-        <button className="add-expense-button">Add Expense</button>
+        <button className="p-3 border-spacing-1 bg-blue-500 text-white" >Add Expense</button>
       </form>
     </div>
-  );
+    );
 };
 
 export default AddExpenseForm;

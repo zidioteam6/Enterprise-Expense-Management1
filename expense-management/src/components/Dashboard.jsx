@@ -25,6 +25,7 @@ import AddExpenseForm from './AddExpenseForm';
 import ExpenseSummaryModal from './ExpenseSummaryModal';
 import ApprovedExpensesModal from './ApprovedExpensesModal';
 import AuditLogsModal from './AuditLogsModal';
+import {  useNavigate } from 'react-router-dom';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -35,6 +36,8 @@ const Dashboard = () => {
   const [approvedModalOpen, setApprovedModalOpen] = useState(false);
   const [auditLogsModalOpen, setAuditLogsModalOpen] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     fetchExpenses();
@@ -86,7 +89,9 @@ const Dashboard = () => {
     } else if (title === 'Expense Summary') {
       setSummaryModalOpen(true);
     } else if (title === 'Approve Expenses') {
-      setApprovedModalOpen(true);
+      // setApprovedModalOpen(true);
+      navigate("/ExpenseResult")
+
     } else if (title === 'Export Report') {
       // Export report logic
       axios({

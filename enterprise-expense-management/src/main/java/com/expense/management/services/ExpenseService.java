@@ -23,6 +23,13 @@ public class ExpenseService  {
 		}
 		
 		public Expense add(Expense expense){
+			if (expense.getAmount()<3000) {
+				expense.setPriority("Low");
+			} else if(expense.getAmount()<20000){
+				expense.setPriority("Medium");
+			}else {
+				expense.setPriority("High");
+			}
 			return expenseRepository.save(expense);
 		}
 }

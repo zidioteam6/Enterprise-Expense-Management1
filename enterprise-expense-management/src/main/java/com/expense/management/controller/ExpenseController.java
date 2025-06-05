@@ -4,6 +4,7 @@ package com.expense.management.controller;
 import com.expense.management.model.Budget;
 import com.expense.management.model.Expense;
 import com.expense.management.model.ExpenseStatus;
+import com.expense.management.repository.ExpenseRepository;
 import com.expense.management.services.ExpenseService;
 import com.expense.management.util.HibernateUtil;
 import org.hibernate.Session;
@@ -13,12 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+//import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/expenses")
 public class ExpenseController {
@@ -26,26 +31,42 @@ public class ExpenseController {
 	@Autowired
 	ExpenseService expenseService;
 
-    @PostMapping
-    public ResponseEntity<?> addExpense(@RequestBody Expense expense) {
-//        Transaction transaction = null;
-//        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-//            transaction = session.beginTransaction();
-//            session.save(expense);
-//            transaction.commit();
-//            return "Expense added successfully!";
-//        } catch (Exception e) {
-//            if (transaction != null) {
-//                transaction.rollback();
-//            }
-//            e.printStackTrace();
-//            return "Error adding expense.";
-//        }
-    	
-    	return new ResponseEntity<>(expenseService.add(expense), HttpStatus.CREATED);
-    	
-    }
+	@Autowired
+	ExpenseRepository expenseRepository;
+	
+	
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE	)
+	public ResponseEntity<?> createExpense(
+			 @RequestParam("amount") double amount,
+		        @RequestParam("category") String category,
+		        @RequestParam("description") String description,
+		        @RequestParam(value = "attachment", required = false) MultipartFile attachmentFile) throws IOException {
+	    
+		 Expense expense = new Expense();
+		    expense.setAmount(amount);
+		    expense.setCategory(category);
+		    expense.setDescription(description);
+		    expense.setApprovalStatus(ExpenseStatus.PENDING);
+		    
+		    System.out.println("bye");
+		    if (attachmentFile != null && !attachmentFile.isEmpty()) {
+		        try {
+		            expense.setAttachment(attachmentFile.getBytes());
+		            expense.setAttachmentType(attachmentFile.getContentType());
+		        } catch (IOException e) {
+		            return ResponseEntity.badRequest().body("File processing error");
+		        }
+		    }
 
+		    expenseService.add(expense);
+		    
+		    System.out.println("hello");
+		    return new ResponseEntity<>("Expense saved successfully", HttpStatus.OK);
+	}
+	
+	
+	
+	
     @GetMapping
     public ResponseEntity<?> getAllExpenses() {
         return new ResponseEntity<>( expenseService.getAll(), HttpStatus.OK);
