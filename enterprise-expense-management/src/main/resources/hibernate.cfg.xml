@@ -7,7 +7,7 @@
         <!-- Connection Settings -->
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
         <property name="hibernate.connection.password">root</property>
-<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/expense_test?useSSL=false&amp;serverTimezone=UTC</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/expense_test?useSSL=false&amp;serverTimezone=UTC</property>
         <property name="hibernate.connection.username">root</property>
 
         <!-- Connection Pool Settings (C3P0) -->
@@ -25,5 +25,6 @@
         <!-- Mappings -->
         <mapping class="com.expense.management.model.Budget"/>
         <mapping class="com.expense.management.model.Expense"/>
+        <mapping class="com.expense.management.model.Settings"/>
     </session-factory>
 </hibernate-configuration>

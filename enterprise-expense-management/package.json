@@ -1,6 +1,14 @@
 {
 
   "dependencies": {
-    "react-router-dom": "^7.5.0"
+
+    "@mui/x-charts": "^8.5.0",
+
+    "react-router-dom": "^7.5.0",
+
+    "recharts": "^2.15.3"
+
   }
+
 }
+

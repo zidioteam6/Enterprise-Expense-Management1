@@ -1,6 +1,4 @@
-
-
- .expense-summary-modal {
+.expense-summary-modal {
   background: #fff;
   padding: 25px 30px;
   border-radius: 10px;
@@ -10,7 +8,7 @@
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
- .expense-summary-modal-header {
+.expense-summary-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -48,11 +46,9 @@
   font-weight: bold;
 }
 
-
-
-
 .dashboard-container {
-  padding: 40px;
+  padding: 2rem;
+  position: relative;
   background-color: #f0f2f5;
   min-height: 100vh;
 }
@@ -93,58 +89,59 @@
   background: white;
   border-radius: 12px;
 }
-/* Dashboard Styles */
 
-
-
-
-.dashboard-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #EEF2FF, #EDE9FE);
-  padding: 2rem;
+/* Header styles */
+.MuiAppBar-root {
+  background: white !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.dashboard-title {
-  color: #4B5563;
-  font-weight: bold;
-  margin-bottom: 2rem;
-  text-align: center;
+/* Overview cards animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.card-grid {
-  margin-bottom: 2rem;
+.MuiCard-root {
+  animation: fadeIn 0.5s ease-out;
 }
 
-.feature-card {
-  background-color: white;
-  border-radius: 0.5rem;
-  transition: all 0.3s ease-in-out;
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .dashboard-container {
+    padding: 12px;
+  }
+  
+  .card-content {
+    padding: 16px;
+  }
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.card-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }
 
-.chart-container {
-  padding: 2rem;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 2rem;
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 /* Reuse styles for AddExpenseForm and ExpenseSummaryModal */
-
 .add-expense-container {
   display: flex;
   min-height: 100vh;
@@ -244,15 +241,90 @@
   cursor: not-allowed;
 }
 
-@keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
-}  
+/* Notification Center Styles */
+.notification-center {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #f44336;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.notification-item {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.unread {
+  background-color: #f5f5f5;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.notification-message {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.notification-time {
+  color: #999;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.notification-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9;
+}
 
 

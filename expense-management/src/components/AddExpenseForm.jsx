@@ -2,7 +2,7 @@
 
 
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/axios';
 
 const AddExpenseForm = ({ onAddExpense, closeForm }) => {
   const [formData, setFormData] = useState({
@@ -49,19 +49,11 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
     }
 
     try {
-      const expenseData = new FormData();
-      expenseData.append('amount', formData.amount);
-      expenseData.append('category', formData.category);
-      expenseData.append('date', formData.date);
-      expenseData.append('description', formData.description);
-      if (invoice) {
-        expenseData.append('invoice', invoice);
-      }
-
-      const response = await axios.post('http://localhost:8080/api/expenses', expenseData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await api.post('/expenses', {
+        amount: parseFloat(formData.amount),
+        category: formData.category,
+        date: formData.date,
+        description: formData.description
       });
 
       onAddExpense(response.data);
@@ -152,7 +144,7 @@ const AddExpenseForm = ({ onAddExpense, closeForm }) => {
           />
         </div>
 
-        <button className="add-expense-button" disabled={!!error}>Add Expense</button>
+        <button type="submit" className="add-expense-button">Add Expense</button>
       </form>
     </div>
   );

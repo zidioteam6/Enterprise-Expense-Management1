@@ -13,7 +13,7 @@ import {
   IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
+import api from '../utils/axios';
 
 const AuditLogsModal = ({ open, onClose }) => {
   const [logs, setLogs] = useState([]);
@@ -27,11 +27,15 @@ const AuditLogsModal = ({ open, onClose }) => {
 
   const fetchLogs = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/audit/logs');
+      const response = await api.get('/audit/logs');
       setLogs(response.data);
       setError('');
     } catch (err) {
-      setError('Failed to fetch audit logs: ' + (err.response?.data || err.message));
+      const errorMessage = err.response
+        ? `API Error: ${err.response.status} - ${err.response.data.message || 'Unknown error'}`
+        : `Network Error: ${err.message}`;
+      setError(errorMessage);
+      console.error('Error fetching audit logs:', err);
     }
   };
 

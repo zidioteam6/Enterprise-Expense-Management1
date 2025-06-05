@@ -1,7 +1,7 @@
 /* New React component (ExpenseApprovalDashboard) for displaying expenses grouped by approval status */
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/axios';
 
 const ExpenseApprovalDashboard = () => {
   const [expenses, setExpenses] = useState({ approved: [], notApproved: [] });
@@ -10,10 +10,15 @@ const ExpenseApprovalDashboard = () => {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-         const response = await axios.get('http://localhost:8080/api/expenses/by-approval-status');
-         setExpenses(response.data);
+        const response = await api.get('/expenses/by-approval-status');
+        setExpenses(response.data);
+        setError('');
       } catch (err) {
-         setError('Error fetching expenses: ' + (err.response ? err.response.data : err.message));
+        const errorMessage = err.response
+          ? `API Error: ${err.response.status} - ${err.response.data.message || 'Unknown error'}`
+          : `Network Error: ${err.message}`;
+        setError(errorMessage);
+        console.error('Error fetching expenses:', err);
       }
     };
     fetchExpenses();

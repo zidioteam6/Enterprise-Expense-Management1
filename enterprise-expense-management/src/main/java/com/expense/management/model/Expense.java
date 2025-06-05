@@ -132,6 +132,18 @@ private ExpenseStatus approvalStatus = ExpenseStatus.PENDING;
     @Column(name = "attachment_type")
     private String attachmentType;
 
+    @Column(name = "employee_id")
+    private Long employeeId;
+
+    @Column(name = "auto_approval_threshold")
+    private Double autoApprovalThreshold;
+
+    @Column(name = "notify_on_approval")
+    private Boolean notifyOnApproval = true;
+
+    @Column(name = "notify_on_rejection")
+    private Boolean notifyOnRejection = true;
+
     // Default constructor
     public Expense() {}
 
@@ -198,6 +210,38 @@ private ExpenseStatus approvalStatus = ExpenseStatus.PENDING;
 
     public void setAttachmentType(String attachmentType) {
         this.attachmentType = attachmentType;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public Double getAutoApprovalThreshold() {
+        return autoApprovalThreshold;
+    }
+
+    public void setAutoApprovalThreshold(Double autoApprovalThreshold) {
+        this.autoApprovalThreshold = autoApprovalThreshold;
+    }
+
+    public Boolean getNotifyOnApproval() {
+        return notifyOnApproval;
+    }
+
+    public void setNotifyOnApproval(Boolean notifyOnApproval) {
+        this.notifyOnApproval = notifyOnApproval;
+    }
+
+    public Boolean getNotifyOnRejection() {
+        return notifyOnRejection;
+    }
+
+    public void setNotifyOnRejection(Boolean notifyOnRejection) {
+        this.notifyOnRejection = notifyOnRejection;
     }
 
     @Override

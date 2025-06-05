@@ -78,6 +78,13 @@ public class User {
     @Column(nullable = false)
     private Role role;  // ✅ Add this field
 
+    @Lob
+    @Column(name = "profile_image")
+    private byte[] profileImage;
+
+    @Column(name = "profile_image_type")
+    private String profileImageType;
+
     // Constructors
     public User() {}
 
@@ -107,6 +114,10 @@ public class User {
         return role;
     }
 
+    public byte[] getProfileImage() {
+        return profileImage;
+    }
+
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
@@ -121,5 +132,17 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public void setProfileImage(byte[] profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public String getProfileImageType() {
+        return profileImageType;
+    }
+
+    public void setProfileImageType(String profileImageType) {
+        this.profileImageType = profileImageType;
     }
 }

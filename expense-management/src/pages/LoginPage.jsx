@@ -1,189 +1,81 @@
-// import React, { useState } from 'react';
-// import { Link } from 'react-router-dom';
-// import { useNavigate } from 'react-router-dom';
-
-// import { Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
-
-// export default function LoginPage() {
-//   const [email, setEmail] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const navigate = useNavigate();
-
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     setIsSubmitting(true);
-    
-//     // Simulate API call
-//     setTimeout(() => {
-//       console.log('Login attempt with:', { email, password });
-//       setIsSubmitting(false);
-//       // Reset form or redirect user after successful login
-//       // Redirect user to dashboard after successful login
-//     navigate('/dashboard');
-//     }, 1500);
-//   };
-
-//   return (
-//     <div className="login-container">
-//       <div className="login-card">
-//         {/* Header */}
-//         <div className="login-header">
-//           <h2>Welcome Back</h2>
-//           <p>Sign in to continue</p>
-//         </div>
-        
-//         {/* Form */}
-//         <div className="login-form">
-//           <form onSubmit={handleSubmit}>
-//             {/* Email input */}
-//             <div className="form-group">
-//               <label htmlFor="email">Email</label>
-//               <div className="input-container">
-//                 <span className="icon">
-//                   <User size={18} />
-//                 </span>
-//                 <input
-//                   id="email"
-//                   type="email"
-//                   value={email}
-//                   onChange={(e) => setEmail(e.target.value)}
-//                   placeholder="your@email.com"
-//                   required
-//                 />
-//               </div>
-//             </div>
-            
-//             {/* Password input */}
-//             <div className="form-group">
-//               <label htmlFor="password">Password</label>
-//               <div className="input-container">
-//                 <span className="icon">
-//                   <Lock size={18} />
-//                 </span>
-//                 <input
-//                   id="password"
-//                   type={showPassword ? "text" : "password"}
-//                   value={password}
-//                   onChange={(e) => setPassword(e.target.value)}
-//                   placeholder="••••••••"
-//                   required
-//                 />
-//                 <button
-//                   type="button"
-//                   className="toggle-password"
-//                   onClick={() => setShowPassword(!showPassword)}
-//                 >
-//                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-//                 </button>
-//               </div>
-//             </div>
-            
-//             {/* Forgot password & Remember me */}
-//             <div className="form-footer">
-//               <label className="remember-me">
-//                 <input type="checkbox" />
-//                 Remember me
-//               </label>
-//               <a href="#" className="forgot-password">
-//                 Forgot password?
-//               </a>
-//             </div>
-            
-//             {/* Submit button */}
-//             <button
-//               type="submit"
-//               disabled={isSubmitting}
-//               className="login-button"
-//             >
-//               {isSubmitting ? (
-//                 <>
-//                   <svg className="spinner" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-//                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-//                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-//                   </svg>
-//                   Processing...
-//                 </>
-//               ) : (
-//                 <>
-//                   Sign In
-//                   <ArrowRight style={{ marginLeft: '8px' }} size={18} />
-//                 </>
-//               )}
-//             </button>
-//           </form>
-          
-//           {/* Sign up link - Updated to use React Router */}
-//           <div className="signup">
-//             <p>
-//               Don't have an account?{' '}
-//               <Link to="/signup" className="forgot-password">
-//                 Sign up
-//               </Link>
-//             </p>
-//           </div>
-          
-//           {/* Social login */}
-//           <div className="social-divider">
-//             <span>Or continue with</span>
-//           </div>
-          
-//           <div className="social-buttons">
-//             {['Google', 'Twitter', 'GitHub'].map((provider) => (
-//               <button
-//                 key={provider}
-//                 type="button"
-//                 className="social-button"
-//               >
-//                 {provider}
-//               </button>
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
+import api from '../utils/axios';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      console.log('Attempting login for:', email);
+      const response = await api.post('/auth/login', {
+        email,
+        password
       });
 
-      const data = await response.json();
+      console.log('Login response:', response.data);
+      console.log('Login response role:', response.data.role);
+      console.log('Login response role type:', typeof response.data.role);
 
-      if (response.ok) {
-        // Save token or user info - adjust key name if needed
-        localStorage.setItem('token', data.token);
+      if (response.data.message === 'Login successful') {
+        // Verify all required fields are present
+        const requiredFields = ['email', 'role', 'userId', 'fullName'];
+        const missingFields = requiredFields.filter(field => !response.data[field]);
 
-        alert('Login successful!');
-        navigate('/dashboard'); // Redirect to dashboard page
+        if (missingFields.length > 0) {
+          throw new Error(`Login response missing required fields: ${missingFields.join(', ')}`);
+        }
+
+        // Store user data
+        const userData = {
+          email: response.data.email,
+          username: response.data.fullName,
+          role: response.data.role,
+          id: response.data.userId,
+          fullName: response.data.fullName
+        };
+
+        console.log('Storing user data:', userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        // Verify the stored data
+        const storedData = JSON.parse(localStorage.getItem('user'));
+        console.log('Verified stored user data:', storedData);
+        console.log('Stored role:', storedData.role);
+        console.log('Stored role type:', typeof storedData.role);
+
+        if (!storedData || !storedData.role) {
+          throw new Error('Failed to store user data properly');
+        }
+
+        // Role-based navigation with debug logging
+        console.log('Checking role for navigation:', storedData.role);
+        console.log('Role comparison:', storedData.role.toUpperCase() === 'MANAGER');
+        
+        if (storedData.role.toUpperCase() === 'MANAGER') {
+          console.log('Navigating to manager dashboard');
+          navigate('/manager-dashboard');
+        } else {
+          console.log('Navigating to regular dashboard');
+          navigate('/dashboard');
+        }
+
       } else {
-        alert(data.message || 'Invalid email or password.');
+        setError(response.data.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Network error. Please try again later.');
+      setError(error.response?.data?.message || error.message || 'Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -196,6 +88,18 @@ export default function LoginPage() {
           <h2>Login</h2>
           <p>Welcome back! Please login to your account.</p>
         </div>
+        {error && (
+          <div className="error-message" style={{
+            color: 'red',
+            marginBottom: '1rem',
+            padding: '10px',
+            backgroundColor: '#ffebee',
+            borderRadius: '4px',
+            border: '1px solid #ffcdd2'
+          }}>
+            {error}
+          </div>
+        )}
         <div className="login-form">
           <form onSubmit={handleSubmit}>
             {/* Email */}
@@ -259,17 +163,6 @@ export default function LoginPage() {
                 Sign up
               </Link>
             </p>
-          </div>
-
-          <div className="social-divider">
-            <span>Or login with</span>
-          </div>
-          <div className="social-buttons">
-            {['Google', 'Twitter', 'GitHub'].map((provider) => (
-              <button key={provider} type="button" className="social-button">
-                {provider}
-              </button>
-            ))}
           </div>
         </div>
       </div>
