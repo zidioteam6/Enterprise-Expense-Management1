@@ -1,72 +1,16 @@
 package com.expense.management.model;
+
 import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
 
-
-// @Entity
-// @Table(name = "users")
-// public class User {
-
-//     @Id
-//     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//     private Long id;
-
-//     @Column(nullable = false)
-//     private String fullName;
-
-//     @Column(nullable = false, unique = true)
-//     private String email;
-
-//     @Column(nullable = false)
-//     private String password;
-
-//     // Constructors
-//     public User() {}
-
-//     public User(String email, String password) {
-//         this.email = email;
-//         this.password = password;
-//     }
-
-//     // Getters and Setters
-//     public Long getId() {
-//         return id;
-//     }
-
-//     public String getFullName() {
-//         return fullName;
-//     }
-    
-
-//     public String getEmail() {
-//         return email;
-//     }
-
-//     public void setFullName(String fullName) {
-//         this.fullName = fullName;
-//     }
-
-//     public void setEmail(String email) {
-//         this.email = email;
-//     }
-
-//     public String getPassword() {
-//         return password;
-//     }
-
-//     public void setPassword(String password) {
-//         this.password = password;
-//     }
-// }
+@Data
 @Entity
 @Table(name = "users")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private String fullName;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -74,52 +18,27 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;  // ✅ Add this field
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
 
-    // Constructors
-    public User() {}
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
-    public User(String email, String password) {
-        this.email = email;
-        this.password = password;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }
