@@ -1,9 +1,17 @@
 package com.expense.management.model;
 
-public enum Role {
-    EMPLOYEE,
-    MANAGER,
-    SUPER_MANAGER,
-    ADMIN
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name = "roles")
+public class Role {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String name;
 }
 	
