@@ -127,6 +127,7 @@ public class Expense {
     @Column(name = "approval_status")
 private ExpenseStatus approvalStatus = ExpenseStatus.PENDING;
     @Lob
+    @Column(name = "attachment", columnDefinition = "LONGBLOB")
     private byte[] attachment;
 
     @Column(name = "attachment_type")

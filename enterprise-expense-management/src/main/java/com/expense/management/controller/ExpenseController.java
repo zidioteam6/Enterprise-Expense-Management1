@@ -159,10 +159,20 @@ public class ExpenseController {
 
             ExpenseStatus oldStatus = expense.getApprovalStatus();
             expense.setApprovalStatus(ExpenseStatus.APPROVED);
+            
+            // Set default notification preferences if null
+            if (expense.getNotifyOnApproval() == null) {
+                expense.setNotifyOnApproval(true);
+            }
+            if (expense.getNotifyOnRejection() == null) {
+                expense.setNotifyOnRejection(true);
+            }
+            
             Expense updatedExpense = expenseDAO.saveExpense(expense);
 
-            // Send notification if enabled
-            if (updatedExpense.getNotifyOnApproval()) {
+            // Send notification if enabled (safely handle null)
+            Boolean shouldNotify = updatedExpense.getNotifyOnApproval();
+            if (Boolean.TRUE.equals(shouldNotify)) {
                 notificationService.notifyExpenseStatusChange(updatedExpense, oldStatus, ExpenseStatus.APPROVED);
             }
 
@@ -213,6 +223,51 @@ public class ExpenseController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error rejecting expense: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/comment")
+    public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody Map<String, String> commentRequest) {
+        try {
+            System.out.println("Received comment request for expense ID: " + id);
+            System.out.println("Comment request body: " + commentRequest);
+
+            Expense expense = expenseDAO.getExpenseById(id);
+            if (expense == null) {
+                System.out.println("Expense not found with ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Expense not found with id: " + id);
+            }
+
+            String comment = commentRequest.get("comment");
+            if (comment == null || comment.trim().isEmpty()) {
+                System.out.println("Empty comment received");
+                return ResponseEntity.badRequest()
+                    .body("Comment cannot be empty");
+            }
+
+            System.out.println("Adding comment to expense: " + comment);
+
+            // Log the comment
+            auditService.logEvent(
+                "system",
+                "COMMENT",
+                "Added comment to expense (ID: " + id + "): " + comment,
+                "SUCCESS"
+            );
+
+            // You might want to store the comment in a separate table
+            // For now, we'll just log it in the audit log
+            return ResponseEntity.ok(Map.of(
+                "message", "Comment added successfully",
+                "expenseId", id,
+                "comment", comment
+            ));
+        } catch (Exception e) {
+            System.err.println("Error adding comment: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error adding comment: " + e.getMessage());
         }
     }
 }

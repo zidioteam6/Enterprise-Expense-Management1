@@ -48,17 +48,26 @@ public class ExpenseDAO {
     }
 
     public Expense saveExpense(Expense expense) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-            try {
-                session.saveOrUpdate(expense);
-                transaction.commit();
-                return expense;
-            } catch (Exception e) {
-                if (transaction != null) {
-                    transaction.rollback();
-                }
-                throw e;
+        Session session = null;
+        Transaction transaction = null;
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
+            transaction = session.beginTransaction();
+            
+            // Merge instead of saveOrUpdate to handle detached entities better
+            Expense mergedExpense = (Expense) session.merge(expense);
+            transaction.commit();
+            return mergedExpense;
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.err.println("Error saving expense: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to save expense: " + e.getMessage(), e);
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
             }
         }
     }

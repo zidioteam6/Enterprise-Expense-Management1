@@ -137,15 +137,28 @@ const ManagerDashboard = () => {
 
   // Handle comment submission
   const handleCommentSubmit = async () => {
-    if (!commentDialog.expense) return;
+    if (!commentDialog.expense) {
+      console.log('No expense selected for comment');
+      return;
+    }
+    
+    console.log('Submitting comment for expense:', commentDialog.expense);
+    console.log('Comment text:', comment);
     
     try {
-      await api.post(`/expenses/${commentDialog.expense.id}/comment`, { comment });
+      const response = await api.post(`/expenses/${commentDialog.expense.id}/comment`, { comment });
+      console.log('Comment submission response:', response.data);
       setSuccess('Comment added successfully');
       setCommentDialog({ open: false, expense: null });
       setComment('');
       fetchExpenses();
     } catch (err) {
+      console.error('Error submitting comment:', err);
+      console.error('Error details:', {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message
+      });
       setError('Failed to add comment: ' + err.message);
     }
   };
