@@ -41,6 +41,17 @@ public class ExpenseDAO {
         }
     }
 
+    public List<Expense> getExpensesByEmployeeId(Long employeeId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Expense> query = session.createQuery(
+                "FROM Expense WHERE employeeId = :employeeId", 
+                Expense.class
+            );
+            query.setParameter("employeeId", employeeId);
+            return query.list();
+        }
+    }
+
     public Expense getExpenseById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Expense.class, id);

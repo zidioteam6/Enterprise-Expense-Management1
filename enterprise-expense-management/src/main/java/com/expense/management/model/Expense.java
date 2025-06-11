@@ -137,13 +137,45 @@ private ExpenseStatus approvalStatus = ExpenseStatus.PENDING;
     private Long employeeId;
 
     @Column(name = "auto_approval_threshold")
-    private Double autoApprovalThreshold;
-
+    private Double autoApprovalThreshold = 5000.0; // Default ₹5000
+    
     @Column(name = "notify_on_approval")
     private Boolean notifyOnApproval = true;
 
     @Column(name = "notify_on_rejection")
     private Boolean notifyOnRejection = true;
+
+    // Multi-level approval fields
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_approval_stage")
+    private ApprovalStage currentApprovalStage = ApprovalStage.PENDING_MANAGER;
+    
+    @Column(name = "manager_approval_threshold")
+    private Double managerApprovalThreshold = 10000.0; // Default ₹10000
+    
+    @Column(name = "finance_approval_threshold")
+    private Double financeApprovalThreshold = 15000.0; // Default ₹15000
+    
+    @Column(name = "admin_approval_threshold")
+    private Double adminApprovalThreshold = 15000.0; // Default ₹15000+
+    
+    @Column(name = "manager_id")
+    private Long managerId;
+    
+    @Column(name = "finance_id")
+    private Long financeId;
+    
+    @Column(name = "admin_id")
+    private Long adminId;
+    
+    @Column(name = "requires_manager_approval")
+    private Boolean requiresManagerApproval = true;
+    
+    @Column(name = "requires_finance_approval")
+    private Boolean requiresFinanceApproval = true;
+    
+    @Column(name = "requires_admin_approval")
+    private Boolean requiresAdminApproval = true;
 
     // Default constructor
     public Expense() {}
@@ -243,6 +275,86 @@ private ExpenseStatus approvalStatus = ExpenseStatus.PENDING;
 
     public void setNotifyOnRejection(Boolean notifyOnRejection) {
         this.notifyOnRejection = notifyOnRejection;
+    }
+
+    public ApprovalStage getCurrentApprovalStage() {
+        return currentApprovalStage;
+    }
+
+    public void setCurrentApprovalStage(ApprovalStage currentApprovalStage) {
+        this.currentApprovalStage = currentApprovalStage;
+    }
+
+    public Double getManagerApprovalThreshold() {
+        return managerApprovalThreshold;
+    }
+
+    public void setManagerApprovalThreshold(Double managerApprovalThreshold) {
+        this.managerApprovalThreshold = managerApprovalThreshold;
+    }
+
+    public Double getFinanceApprovalThreshold() {
+        return financeApprovalThreshold;
+    }
+
+    public void setFinanceApprovalThreshold(Double financeApprovalThreshold) {
+        this.financeApprovalThreshold = financeApprovalThreshold;
+    }
+
+    public Double getAdminApprovalThreshold() {
+        return adminApprovalThreshold;
+    }
+
+    public void setAdminApprovalThreshold(Double adminApprovalThreshold) {
+        this.adminApprovalThreshold = adminApprovalThreshold;
+    }
+
+    public Long getManagerId() {
+        return managerId;
+    }
+
+    public void setManagerId(Long managerId) {
+        this.managerId = managerId;
+    }
+
+    public Long getFinanceId() {
+        return financeId;
+    }
+
+    public void setFinanceId(Long financeId) {
+        this.financeId = financeId;
+    }
+
+    public Long getAdminId() {
+        return adminId;
+    }
+
+    public void setAdminId(Long adminId) {
+        this.adminId = adminId;
+    }
+
+    public Boolean getRequiresManagerApproval() {
+        return requiresManagerApproval;
+    }
+
+    public void setRequiresManagerApproval(Boolean requiresManagerApproval) {
+        this.requiresManagerApproval = requiresManagerApproval;
+    }
+
+    public Boolean getRequiresFinanceApproval() {
+        return requiresFinanceApproval;
+    }
+
+    public void setRequiresFinanceApproval(Boolean requiresFinanceApproval) {
+        this.requiresFinanceApproval = requiresFinanceApproval;
+    }
+
+    public Boolean getRequiresAdminApproval() {
+        return requiresAdminApproval;
+    }
+
+    public void setRequiresAdminApproval(Boolean requiresAdminApproval) {
+        this.requiresAdminApproval = requiresAdminApproval;
     }
 
     @Override
