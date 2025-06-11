@@ -3,8 +3,11 @@ package com.expense.management.controller;
 import com.expense.management.model.Budget;
 import com.expense.management.model.Expense;
 import com.expense.management.model.ExpenseStatus;
+import com.expense.management.model.ApprovalHistory;
+import com.expense.management.model.ApprovalStage;
 import com.expense.management.dao.ExpenseDAO;
 import com.expense.management.dao.BudgetDAO;
+import com.expense.management.services.ApprovalWorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +18,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.expense.management.services.AuditService;
 import com.expense.management.services.NotificationService;
+import com.expense.management.model.User;
+import com.expense.management.model.Role;
+import com.expense.management.repository.UserRepository;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -35,6 +42,12 @@ public class ExpenseController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private ApprovalWorkflowService approvalWorkflowService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity<?> getAllExpenses() {
@@ -89,8 +102,12 @@ public class ExpenseController {
                 expense.setAutoApprovalThreshold(5000.0);
             }
 
-            // Set initial status
-            if (expense.getAmount() <= expense.getAutoApprovalThreshold()) {
+            // Determine initial approval stage using workflow service
+            ApprovalStage initialStage = approvalWorkflowService.determineInitialStage(expense);
+            expense.setCurrentApprovalStage(initialStage);
+
+            // Set initial status based on stage
+            if (initialStage == ApprovalStage.AUTO_APPROVED) {
                 expense.setApprovalStatus(ExpenseStatus.APPROVED);
             } else {
                 expense.setApprovalStatus(ExpenseStatus.PENDING);
@@ -98,6 +115,11 @@ public class ExpenseController {
 
             // Save the expense
             Expense savedExpense = expenseDAO.saveExpense(expense);
+            
+            // Process auto-approval if applicable
+            if (initialStage == ApprovalStage.AUTO_APPROVED) {
+                approvalWorkflowService.processAutoApproval(savedExpense);
+            }
             
             // Send notification if approved
             if (savedExpense.getApprovalStatus() == ExpenseStatus.APPROVED) {
@@ -108,7 +130,7 @@ public class ExpenseController {
             auditService.logEvent(
                 "system",
                 "ADD",
-                "Added expense (ID: " + savedExpense.getId() + ")",
+                "Added expense (ID: " + savedExpense.getId() + ") with stage: " + initialStage,
                 "SUCCESS"
             );
 
@@ -157,34 +179,47 @@ public class ExpenseController {
                     .body("Expense not found with id: " + id);
             }
 
-            ExpenseStatus oldStatus = expense.getApprovalStatus();
-            expense.setApprovalStatus(ExpenseStatus.APPROVED);
+            // Get approver ID from request body or try to find a valid user
+            Long approverId = null;
+            if (body != null && body.containsKey("approverId")) {
+                try {
+                    approverId = Long.parseLong(body.get("approverId"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.badRequest().body("Invalid approver ID format");
+                }
+            }
             
-            // Set default notification preferences if null
-            if (expense.getNotifyOnApproval() == null) {
-                expense.setNotifyOnApproval(true);
-            }
-            if (expense.getNotifyOnRejection() == null) {
-                expense.setNotifyOnRejection(true);
+            // If no approver ID provided, try to find a manager/admin user
+            if (approverId == null) {
+                // For now, we'll use a fallback approach - find any user with MANAGER or ADMIN role
+                // In a real application, this would come from JWT token
+                List<User> users = userRepository.findAll();
+                Optional<User> approver = users.stream()
+                    .filter(user -> user.getRole() == Role.MANAGER || user.getRole() == Role.ADMIN)
+                    .findFirst();
+                
+                if (approver.isPresent()) {
+                    approverId = approver.get().getId();
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("No valid approver found in system");
+                }
             }
             
-            Expense updatedExpense = expenseDAO.saveExpense(expense);
+            String comment = body != null && body.containsKey("comment") ? body.get("comment") : "";
 
-            // Send notification if enabled (safely handle null)
-            Boolean shouldNotify = updatedExpense.getNotifyOnApproval();
-            if (Boolean.TRUE.equals(shouldNotify)) {
-                notificationService.notifyExpenseStatusChange(updatedExpense, oldStatus, ExpenseStatus.APPROVED);
+            // Process approval using workflow service
+            boolean success = approvalWorkflowService.processApproval(id, approverId, comment, true);
+
+            if (success) {
+                // Get updated expense
+                Expense updatedExpense = expenseDAO.getExpenseById(id);
+                return ResponseEntity.ok(updatedExpense);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to process approval");
             }
 
-            // Log the approval
-            auditService.logEvent(
-                "system",
-                "APPROVE",
-                "Approved expense (ID: " + id + ")" + (body != null && body.containsKey("comment") ? " - Comment: " + body.get("comment") : ""),
-                "SUCCESS"
-            );
-
-            return ResponseEntity.ok(updatedExpense);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -201,24 +236,47 @@ public class ExpenseController {
                     .body("Expense not found with id: " + id);
             }
 
-            ExpenseStatus oldStatus = expense.getApprovalStatus();
-            expense.setApprovalStatus(ExpenseStatus.REJECTED);
-            Expense updatedExpense = expenseDAO.saveExpense(expense);
+            // Get approver ID from request body or try to find a valid user
+            Long approverId = null;
+            if (body != null && body.containsKey("approverId")) {
+                try {
+                    approverId = Long.parseLong(body.get("approverId"));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.badRequest().body("Invalid approver ID format");
+                }
+            }
+            
+            // If no approver ID provided, try to find a manager/admin user
+            if (approverId == null) {
+                // For now, we'll use a fallback approach - find any user with MANAGER or ADMIN role
+                // In a real application, this would come from JWT token
+                List<User> users = userRepository.findAll();
+                Optional<User> approver = users.stream()
+                    .filter(user -> user.getRole() == Role.MANAGER || user.getRole() == Role.ADMIN)
+                    .findFirst();
+                
+                if (approver.isPresent()) {
+                    approverId = approver.get().getId();
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("No valid approver found in system");
+                }
+            }
+            
+            String comment = body != null && body.containsKey("comment") ? body.get("comment") : "";
 
-            // Send notification if enabled
-            if (updatedExpense.getNotifyOnRejection()) {
-                notificationService.notifyExpenseStatusChange(updatedExpense, oldStatus, ExpenseStatus.REJECTED);
+            // Process rejection using workflow service
+            boolean success = approvalWorkflowService.processApproval(id, approverId, comment, false);
+
+            if (success) {
+                // Get updated expense
+                Expense updatedExpense = expenseDAO.getExpenseById(id);
+                return ResponseEntity.ok(updatedExpense);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to process rejection");
             }
 
-            // Log the rejection
-            auditService.logEvent(
-                "system",
-                "REJECT",
-                "Rejected expense (ID: " + id + ")" + (body != null && body.containsKey("comment") ? " - Comment: " + body.get("comment") : ""),
-                "SUCCESS"
-            );
-
-            return ResponseEntity.ok(updatedExpense);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -268,6 +326,87 @@ public class ExpenseController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error adding comment: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/approval-history")
+    public ResponseEntity<?> getApprovalHistory(@PathVariable Long id) {
+        try {
+            List<ApprovalHistory> history = approvalWorkflowService.getApprovalHistory(id);
+            return ResponseEntity.ok(history);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error fetching approval history: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/pending/{stage}")
+    public ResponseEntity<?> getExpensesByStage(@PathVariable String stage) {
+        try {
+            ApprovalStage approvalStage = ApprovalStage.valueOf(stage.toUpperCase());
+            List<Expense> expenses = expenseDAO.getExpensesByStatus(ExpenseStatus.PENDING);
+            
+            // Filter by current approval stage
+            List<Expense> filteredExpenses = expenses.stream()
+                .filter(expense -> expense.getCurrentApprovalStage() == approvalStage)
+                .collect(java.util.stream.Collectors.toList());
+            
+            return ResponseEntity.ok(filteredExpenses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid approval stage: " + stage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error fetching expenses by stage: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/pending-for-user/{userId}")
+    public ResponseEntity<?> getExpensesPendingForUser(@PathVariable Long userId) {
+        try {
+            List<Expense> expenses = approvalWorkflowService.getExpensesPendingForUser(userId);
+            return ResponseEntity.ok(expenses);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error fetching pending expenses for user: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/by-approval-stage")
+    public ResponseEntity<?> getExpensesByApprovalStage() {
+        try {
+            Map<String, List<Expense>> result = new HashMap<>();
+            List<Expense> allExpenses = expenseDAO.getAllExpenses();
+            
+            // Group expenses by approval stage
+            result.put("pending_manager", allExpenses.stream()
+                .filter(e -> e.getCurrentApprovalStage() == ApprovalStage.PENDING_MANAGER)
+                .collect(java.util.stream.Collectors.toList()));
+            
+            result.put("pending_finance", allExpenses.stream()
+                .filter(e -> e.getCurrentApprovalStage() == ApprovalStage.PENDING_FINANCE)
+                .collect(java.util.stream.Collectors.toList()));
+            
+            result.put("pending_admin", allExpenses.stream()
+                .filter(e -> e.getCurrentApprovalStage() == ApprovalStage.PENDING_ADMIN)
+                .collect(java.util.stream.Collectors.toList()));
+            
+            result.put("approved", allExpenses.stream()
+                .filter(e -> e.getCurrentApprovalStage() == ApprovalStage.APPROVED || 
+                           e.getCurrentApprovalStage() == ApprovalStage.AUTO_APPROVED)
+                .collect(java.util.stream.Collectors.toList()));
+            
+            result.put("rejected", allExpenses.stream()
+                .filter(e -> e.getCurrentApprovalStage() == ApprovalStage.REJECTED)
+                .collect(java.util.stream.Collectors.toList()));
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error fetching expenses by approval stage: " + e.getMessage());
         }
     }
 }

@@ -5,6 +5,8 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './components/Dashboard';
 import ManagerDashboard from './components/ManagerDashboard';
+import FinanceDashboard from './components/FinanceDashboard';
+import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import FileUpload from './components/FileUpload';
 
@@ -21,7 +23,7 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'FINANCE', 'ADMIN']}>
               <Dashboard />
             </ProtectedRoute>
           }
@@ -35,9 +37,25 @@ function App() {
           }
         />
         <Route
+          path="/finance-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['FINANCE', 'ADMIN']}>
+              <FinanceDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/upload-expense"
           element={
-            <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'FINANCE', 'ADMIN']}>
               <FileUpload />
             </ProtectedRoute>
           }

@@ -65,6 +65,12 @@ export default function LoginPage() {
         if (storedData.role.toUpperCase() === 'MANAGER') {
           console.log('Navigating to manager dashboard');
           navigate('/manager-dashboard');
+        } else if (storedData.role.toUpperCase() === 'FINANCE') {
+          console.log('Navigating to finance dashboard');
+          navigate('/finance-dashboard');
+        } else if (storedData.role.toUpperCase() === 'ADMIN') {
+          console.log('Navigating to admin dashboard');
+          navigate('/admin-dashboard');
         } else {
           console.log('Navigating to regular dashboard');
           navigate('/dashboard');
