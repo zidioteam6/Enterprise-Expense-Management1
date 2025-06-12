@@ -1,5 +1,7 @@
 package com.expense.management.services;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,16 +20,20 @@ public class UserService {
 
     public User updateUser(User user, String performedBy) {
         User updatedUser = userRepository.save(user);
-        
+
         // Using the new logEvent method with appropriate parameters
         auditService.logEvent(
-            performedBy,                    // user
-            "UPDATE_USER",                  // action
-            "Updated user: " + updatedUser.getFullName(),  // details
-            "SUCCESS"                       // status
+                performedBy, // user
+                "UPDATE_USER", // action
+                "Updated user: " + updatedUser.getFullName(), // details
+                "SUCCESS" // status
         );
 
         return updatedUser;
     }
-}
 
+    public User getUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElse(null);
+    }
+}

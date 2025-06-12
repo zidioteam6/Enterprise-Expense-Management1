@@ -27,12 +27,19 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/expenses")
 public class ExpenseController {
+
+    private final AuditLogController auditLogController;
 	
 	@Autowired
 	ExpenseService expenseService;
 
 	@Autowired
 	ExpenseRepository expenseRepository;
+
+
+    ExpenseController(AuditLogController auditLogController) {
+        this.auditLogController = auditLogController;
+    }
 	
 	
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE	)
@@ -72,6 +79,8 @@ public class ExpenseController {
         return new ResponseEntity<>( expenseService.getAll(), HttpStatus.OK);
     }
 
+    
+    
     @GetMapping("/total")
     public double getTotalExpenses() {
         double totalExpenses = 0.0;
@@ -185,53 +194,41 @@ public class ExpenseController {
 
     // Approve expense by ID
     @PutMapping("/{id}/approve")
-    public String approveExpense(@PathVariable Long id) {
-        Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-
-            Expense expense = session.get(Expense.class, id);
-            if (expense == null) {
-                return "Expense not found.";
-            }
-
-            expense.setApprovalStatus(ExpenseStatus.APPROVED);
-            session.update(expense);
-
-            transaction.commit();
-            return "Expense approved successfully!";
-        } catch (Exception e) {
-            if (transaction != null)
-                transaction.rollback();
-            e.printStackTrace();
-            return "Error approving expense.";
-        }
+    public ResponseEntity<?> approveExpense(@PathVariable Long id) {
+    	boolean bol = expenseService.approve(id);
+    	System.out.println(bol);
+    	if(bol) {
+    		return new ResponseEntity<>("updated!" ,HttpStatus.OK);
+    	}
+    	
+    	
+        return new ResponseEntity<>( "failed!" ,HttpStatus.OK);
     }
 
     // Reject expense by ID
-    @PutMapping("/{id}/reject")
-    public String rejectExpense(@PathVariable Long id) {
-        Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-
-            Expense expense = session.get(Expense.class, id);
-            if (expense == null) {
-                return "Expense not found.";
-            }
-
-            expense.setApprovalStatus(ExpenseStatus.REJECTED);
-            session.update(expense);
-
-            transaction.commit();
-            return "Expense rejected successfully!";
-        } catch (Exception e) {
-            if (transaction != null)
-                transaction.rollback();
-            e.printStackTrace();
-            return "Error rejecting expense.";
-        }
-    }
+//    @PutMapping("/{id}/reject")
+//    public String rejectExpense(@PathVariable Long id) {
+//        Transaction transaction = null;
+//        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+//            transaction = session.beginTransaction();
+//
+//            Expense expense = session.get(Expense.class, id);
+//            if (expense == null) {
+//                return "Expense not found.";  
+//            }
+//
+//            expense.setApprovalStatus(ExpenseStatus.REJECTED);
+//            session.update(expense);
+//
+//            transaction.commit();
+//            return "Expense rejected successfully!";
+//        } catch (Exception e) {
+//            if (transaction != null)
+//                transaction.rollback();
+//            e.printStackTrace();
+//            return "Error rejecting expense.";
+//        }
+//    }
 
     ///////////////////////////////////
 
