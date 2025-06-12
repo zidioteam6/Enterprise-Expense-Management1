@@ -1,20 +1,38 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, User, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, EyeOff, Eye, ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+<<<<<<< HEAD
   const navigate = useNavigate();
+=======
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+>>>>>>> e3e293b72ba17ab639399dd936ee056b8401a7aa
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
 
     try {
+<<<<<<< HEAD
       const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,6 +61,12 @@ export default function LoginPage() {
     } catch (error) {
       console.error('Login error:', error);
       setError('Network error. Please try again later.');
+=======
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (error) {
+      setError(error.message || 'Failed to login. Please try again.');
+>>>>>>> e3e293b72ba17ab639399dd936ee056b8401a7aa
     } finally {
       setIsSubmitting(false);
     }
@@ -72,6 +96,7 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 required
+<<<<<<< HEAD
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
@@ -79,12 +104,22 @@ export default function LoginPage() {
               />
             </div>
             <div>
+=======
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="relative">
+>>>>>>> e3e293b72ba17ab639399dd936ee056b8401a7aa
               <label htmlFor="password" className="sr-only">
                 Password
               </label>
               <input
                 id="password"
                 name="password"
+<<<<<<< HEAD
                 type="password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
@@ -92,19 +127,47 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+=======
+                type={showPassword ? 'text' : 'password'}
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400" />
+                )}
+              </button>
+>>>>>>> e3e293b72ba17ab639399dd936ee056b8401a7aa
             </div>
           </div>
 
           <div>
             <button
               type="submit"
+<<<<<<< HEAD
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Sign in
+=======
+              disabled={isSubmitting}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {isSubmitting ? 'Signing in...' : 'Sign in'}
+>>>>>>> e3e293b72ba17ab639399dd936ee056b8401a7aa
             </button>
           </div>
         </form>
 
+<<<<<<< HEAD
         {/* Signup Link */}
         <div className="mt-4 text-center text-sm text-gray-600">
           <p>
@@ -131,8 +194,20 @@ export default function LoginPage() {
               {provider}
             </button>
           ))}
+=======
+        {/* Sign up link */}
+        <div className="signup">
+          <p>
+            Don't have an account?{' '}
+            <Link to="/signup" className="forgot-password">
+              Sign up
+            </Link>
+          </p>
+>>>>>>> e3e293b72ba17ab639399dd936ee056b8401a7aa
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage;
